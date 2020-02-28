@@ -1,0 +1,115 @@
+---
+title: "Optimal Price based on location"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+In this problem we are optimized the prices of a product based on the location of the store and also on the sheliving location
+```{r}
+library(ISLR)
+library(dplyr)
+library(gridExtra)
+library(ggplot2)
+# Importing selected three columns into safeBabies from Carseats Dataset
+SafeBabies <- Carseats %>% select("Sales", "Price", "ShelveLoc")
+```
+
+
+```{r}
+#Filtering the data into Good,Medium and Bad based on the shelve locaction
+good <- filter(SafeBabies,ShelveLoc == 'Good')
+medium <- filter(SafeBabies,ShelveLoc == 'Medium')
+bad <- filter(SafeBabies,ShelveLoc == 'Bad')
+```
+
+
+```{r}
+# Building a regression Model for sales with respect to price for car seats where the shelve location good
+
+shgood<-good[order(good$Price),]
+head(shgood)
+Model1 <- lm(shgood$Sales ~ shgood$Price, data = shgood)
+summary(Model1)
+
+
+```
+
+```{r}
+# Based on the results of regression model and after finding the derivate we obtained the equation for optimal price for car seats where shelve location good
+optimal_price_good = (-0.065785 *55 -17.968864)/(2 * -0.065785)
+optimal_price_good
+
+```
+
+
+
+```{r}
+#Finding the optimal price for change in production cost from 40$ to 85$
+result <- vector("numeric", 40)
+for(cost in 40:86) {
+     optimised_results_good <- (-0.065785 *cost - 17.968864)/(2 * -0.065785)
+   result[cost - 40] <- optimised_results_good
+}
+head(result)
+```
+
+```{r}
+#Combing both optimized price and change in cost and named it as optimized_price_good
+price<- c(40:85)
+optimized_price_good<-cbind.data.frame(result,price)
+names(optimized_price_good)<-c('Optimized Price','Change in Cost')
+```
+
+```{r}
+# Building a regression Model for sales with respect to price for car seats where the shelve location bad
+bad1<-bad[order(bad$Price),]
+head(bad1)
+Model2 <- lm(bad1$Sales ~ bad1$Price, data = bad1)
+summary(Model2)
+```
+
+```{r}
+# Based on the results of regression model and after finding the derivate we obtained the equation for optimal price for car seats where shelve location bad
+Optimum_price_bad = (-0.05522 * 55 - 11.832984) / (2 * -0.05522)
+Optimum_price_bad
+```
+
+
+
+```{r}
+#Finding the optimal price for change in production cost from 40$ to 85$
+result <- vector("numeric", 40)
+for(cost in 40:86) {
+     optimised_results_bad <- (-0.05522 *cost - 11.832984)/(2 * -0.05522)
+   result[cost - 40] <- optimised_results_bad
+}
+head(result)
+```
+
+
+```{r}
+#optimised_results_bad.function()
+price<- c(40:85)
+optimized_prie_bad<-cbind.data.frame(result,price)
+names(optimized_prie_bad)<-c('Optimized Price','Change in Cost')
+```
+
+Plot the optimal price for selling the car seats at those stores where the shelve location is good and bad
+```{r}
+a<-ggplot(optimized_price_good, aes(optimized_price_good$`Optimized Price`, optimized_price_good$`Change in Cost`, colour='Good location')  ) + labs(title = 'Optimized Price VS Cost Price',x='Optimized price',y='Cost Price') + geom_line() +  scale_color_manual("", values = ("Good Price'" = "green")) +geom_point(colour='black')
+```
+
+```{r}
+b<-ggplot(optimized_prie_bad, aes(optimized_prie_bad$`Optimized Price`, optimized_prie_bad$`Change in Cost`, colour='bad location ')  ) + labs(x='Optimized price',y='Cost Price') + geom_line() +  scale_color_manual("", values = ("bad Price'" = "red")) +geom_point(colour='black')
+grid.arrange(a, b, ncol=1)
+```
+
+From the above graph optimized price changes withrespect to cost price by considering the shelve location
+
+When production cost is 55 and shelve location is good the optimized price is 164.07
+
+When production cost is 55 and shelve location is bad the optimized price is 134.6
